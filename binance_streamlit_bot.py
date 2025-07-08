@@ -13,17 +13,20 @@ logging.basicConfig(level=logging.INFO)
 class BasicBot:
     def __init__(self, api_key, api_secret, testnet=True):
         self.client = Client(api_key, api_secret)
-    
+        
         if testnet:
             self.client.FUTURES_URL = 'https://testnet.binancefuture.com/fapi'
             self.client.API_URL = self.client.FUTURES_URL
+            self.client.FUTURES_ACCOUNT = 'https://testnet.binancefuture.com/fapi/v2/account'
+            self.client.FUTURES_ACCOUNT_BALANCE = 'https://testnet.binancefuture.com/fapi/v2/balance'
 
         try:
-            self.client._timestamp_offset = self.client.get_server_time()['serverTime'] - int(time.time() * 1000)
-            logging.info("Time synced with Binance")
-            
+            server_time = self.client.get_server_time()['serverTime']
+            local_time = int(time.time() * 1000)
+            self.client.timestamp_offset = server_time - local_time
+            logging.info("Time synced: offset = %d ms", self.client.timestamp_offset)
         except Exception as e:
-            logging.error("Failed to sync time: %s", str(e))
+            logging.error("Failed to sync time: %s", e)
 
         logging.info("Bot initialized with testnet = %s", testnet)
 
